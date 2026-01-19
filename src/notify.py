@@ -69,3 +69,25 @@ def notify_change(page_name, page_url, diff, first_run=False):
     """Send notification about a page change."""
     message = format_telegram_message(page_name, page_url, diff, first_run)
     return send_telegram(message)
+
+
+def format_failure_message(failed_pages):
+    """Formats a message for page check failures."""
+    page_list = "\n - ".join(failed_pages)
+    return (
+        f"⚠️ *Page Monitor Failure*\n\n"
+        f"The following {len(failed_pages)} page(s) could not be checked due to errors:\n\n"
+        f" - {page_list}"
+    )
+
+
+def notify_failure(failed_pages):
+    """Sends a notification listing all pages that failed to be checked."""
+    if not failed_pages:
+        return
+    message = format_failure_message(failed_pages)
+    # Don't fail the whole run if the failure notification itself fails
+    try:
+        send_telegram(message)
+    except Exception as e:
+        print(f"CRITICAL: Failed to send failure notification: {e}")

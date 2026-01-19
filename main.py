@@ -12,7 +12,7 @@ import sys
 from src.config import load_pages
 from src.storage import get_page_snapshot, save_page_snapshot
 from src.monitor import check_page
-from src.notify import notify_change
+from src.notify import notify_change, notify_failure
 
 
 def run(dry_run=False):
@@ -26,6 +26,7 @@ def run(dry_run=False):
 
     print(f"Checking {len(pages)} page(s)...")
     changes_found = 0
+    failed_pages = []
 
     for page in pages:
         page_id = page["id"]
@@ -44,6 +45,7 @@ def run(dry_run=False):
 
         if result.get("error"):
             print(f"  ERROR: {result['error']}")
+            failed_pages.append(page_name)
             continue
 
         first_run = result.get("first_run", False)
@@ -88,7 +90,10 @@ def run(dry_run=False):
                 changed=False
             )
 
-    print(f"\nDone. {changes_found} change(s) found.")
+    if failed_pages and not dry_run:
+        notify_failure(failed_pages)
+
+    print(f"\nDone. {changes_found} change(s) found. {len(failed_pages)} failure(s).")
     return changes_found
 
 
