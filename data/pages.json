@@ -1,14 +1,14 @@
 {
   "pages": [
     {
-      "id": "ppga-unb",
+      "id": "ppga-capes",
       "name": "PPGA UnB - Processo Seletivo",
       "url": "https://www.ppga.unb.br/index.php?option=com_content&view=article&id=38&Itemid=708",
       "selector": null
     },
     {
-      "id": "camara-pl2630",
-      "name": "Camara - PL 2630/2020",
+      "id": "camara-mp1318",
+      "name": "MP 1318",
       "url": "https://www.camara.leg.br/proposicoesWeb/fichadetramitacao?idProposicao=2562174",
       "selector": null
     }
