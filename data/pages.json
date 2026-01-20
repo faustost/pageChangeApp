@@ -11,6 +11,12 @@
       "name": "MP 1318",
       "url": "https://www.camara.leg.br/proposicoesWeb/fichadetramitacao?idProposicao=2562174",
       "selector": null
+    },
+    {
+      "id": "eurasia-game",
+      "name": "Eurasia Game",
+      "url": "https://faustost.github.io/TopRisksBrazilGame/",
+      "selector": null
     }
   ],
   "settings": {
