@@ -60,3 +60,18 @@ def save_page_snapshot(page_id, content, content_hash, diff=None, changed=False)
         page_data["current_content"] = content
 
     save_snapshots(snapshots)
+
+
+def get_last_no_changes_ts():
+    """Gets the timestamp of the last 'no changes' notification."""
+    snapshots = load_snapshots()
+    return snapshots.get("meta", {}).get("last_no_changes_notification_ts")
+
+
+def set_last_no_changes_ts():
+    """Sets the timestamp for the last 'no changes' notification to now."""
+    snapshots = load_snapshots()
+    if "meta" not in snapshots:
+        snapshots["meta"] = {}
+    snapshots["meta"]["last_no_changes_notification_ts"] = datetime.now(timezone.utc).isoformat()
+    save_snapshots(snapshots)

@@ -9,8 +9,9 @@ Usage:
 
 import argparse
 import sys
+from datetime import datetime, timedelta, timezone
 from src.config import load_pages
-from src.storage import get_page_snapshot, save_page_snapshot
+from src.storage import get_page_snapshot, save_page_snapshot, get_last_no_changes_ts, set_last_no_changes_ts
 from src.monitor import check_page
 from src.notify import notify_change, notify_failure, notify_no_changes
 
@@ -95,7 +96,25 @@ def run(dry_run=False):
         if failed_pages:
             notify_failure(failed_pages)
         elif changes_found == 0 and pages:
-            notify_no_changes()
+            # Check if we should send the daily "no changes" notification
+            last_ts_str = get_last_no_changes_ts()
+            should_notify = True
+
+            if last_ts_str:
+                last_ts = datetime.fromisoformat(last_ts_str)
+                # Ensure last_ts is timezone-aware (it should be, but be safe)
+                if last_ts.tzinfo is None:
+                    last_ts = last_ts.replace(tzinfo=timezone.utc)
+                
+                now = datetime.now(timezone.utc)
+                if now - last_ts < timedelta(hours=24):
+                    should_notify = False
+                    print("  (Skipping 'no changes' notification: < 24h since last one)")
+
+            if should_notify:
+                if notify_no_changes():
+                    set_last_no_changes_ts()
+                    print("  ('No changes' notification sent)")
 
     print(f"\nDone. {changes_found} change(s) found. {len(failed_pages)} failure(s).")
     return changes_found
