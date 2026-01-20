@@ -12,7 +12,7 @@ import sys
 from src.config import load_pages
 from src.storage import get_page_snapshot, save_page_snapshot
 from src.monitor import check_page
-from src.notify import notify_change, notify_failure
+from src.notify import notify_change, notify_failure, notify_no_changes
 
 
 def run(dry_run=False):
@@ -90,8 +90,12 @@ def run(dry_run=False):
                 changed=False
             )
 
-    if failed_pages and not dry_run:
-        notify_failure(failed_pages)
+    # Send notifications based on the outcome
+    if not dry_run:
+        if failed_pages:
+            notify_failure(failed_pages)
+        elif changes_found == 0 and pages:
+            notify_no_changes()
 
     print(f"\nDone. {changes_found} change(s) found. {len(failed_pages)} failure(s).")
     return changes_found

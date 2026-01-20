@@ -34,7 +34,7 @@ def format_telegram_message(page_name, page_url, diff, first_run=False):
     )
 
 
-def send_telegram(message):
+def send_telegram(message, silent=False):
     """Send a message via Telegram bot."""
     token = get_telegram_token()
     chat_id = get_telegram_chat_id()
@@ -53,7 +53,8 @@ def send_telegram(message):
         "chat_id": chat_id,
         "text": message,
         "parse_mode": "Markdown",
-        "disable_web_page_preview": True
+        "disable_web_page_preview": True,
+        "disable_notification": silent,
     }
 
     try:
@@ -68,15 +69,16 @@ def send_telegram(message):
 def notify_change(page_name, page_url, diff, first_run=False):
     """Send notification about a page change."""
     message = format_telegram_message(page_name, page_url, diff, first_run)
-    return send_telegram(message)
+    # Audible notification for changes
+    return send_telegram(message, silent=False)
 
 
 def format_failure_message(failed_pages):
     """Formats a message for page check failures."""
     page_list = "\n - ".join(failed_pages)
     return (
-        f"⚠️ *Page Monitor Failure*\n\n"
-        f"The following {len(failed_pages)} page(s) could not be checked due to errors:\n\n"
+        f"⚠️ *Falha no Monitoramento*\n\n"
+        f"Não foi possível verificar as seguintes {len(failed_pages)} página(s):\n\n"
         f" - {page_list}"
     )
 
@@ -86,8 +88,18 @@ def notify_failure(failed_pages):
     if not failed_pages:
         return
     message = format_failure_message(failed_pages)
-    # Don't fail the whole run if the failure notification itself fails
     try:
-        send_telegram(message)
+        # Silent notification for failures
+        send_telegram(message, silent=True)
     except Exception as e:
         print(f"CRITICAL: Failed to send failure notification: {e}")
+
+
+def notify_no_changes():
+    """Envia uma notificação quando nenhuma alteração é encontrada."""
+    message = (
+        f"✅ *Monitoramento Concluído*\n\n"
+        f"Todas as páginas foram verificadas e nenhuma nova alteração foi encontrada."
+    )
+    # Silent notification for no changes
+    return send_telegram(message, silent=True)
