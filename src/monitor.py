@@ -3,11 +3,16 @@
 import hashlib
 import re
 import difflib
+import time
 import requests
 from bs4 import BeautifulSoup
 
-# Reasonable timeout for requests
-REQUEST_TIMEOUT = 30
+# Timeout for requests (increased for slow servers)
+REQUEST_TIMEOUT = 60
+
+# Retry configuration
+MAX_RETRIES = 3
+RETRY_DELAY = 5  # seconds between retries
 
 # Elements that usually contain noise, not content
 NOISE_TAGS = [
@@ -25,17 +30,27 @@ NOISE_PATTERNS = [
 
 
 def fetch_page(url):
-    """Fetch page content. Returns HTML string or None on error."""
+    """Fetch page content with retry logic. Returns HTML string or None on error."""
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
-    try:
-        response = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT)
-        response.raise_for_status()
-        return response.text
-    except requests.RequestException as e:
-        print(f"Error fetching {url}: {e}")
-        return None
+
+    last_error = None
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            response = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT)
+            response.raise_for_status()
+            return response.text
+        except requests.RequestException as e:
+            last_error = e
+            if attempt < MAX_RETRIES:
+                print(f"Attempt {attempt}/{MAX_RETRIES} failed for {url}: {e}")
+                print(f"Retrying in {RETRY_DELAY} seconds...")
+                time.sleep(RETRY_DELAY)
+            else:
+                print(f"All {MAX_RETRIES} attempts failed for {url}: {e}")
+
+    return None
 
 
 def extract_text(html, selector=None):
