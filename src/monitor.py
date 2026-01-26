@@ -111,9 +111,14 @@ def compute_diff(old_content, new_content, context_lines=2):
     return diff_text
 
 
-def check_page(page_config, previous_content=None):
+def check_page(page_config, previous_content=None, previous_hash=None):
     """
     Check a single page for changes.
+
+    Args:
+        page_config: Page configuration dict
+        previous_content: Previous page content (for diff computation)
+        previous_hash: Previous page hash (preferred over recalculating)
 
     Returns:
         dict with keys: changed, content, hash, diff, error
@@ -138,8 +143,11 @@ def check_page(page_config, previous_content=None):
             "first_run": True
         }
 
-    # Compare
-    previous_hash = compute_hash(previous_content)
+    # Compare: Use provided hash if available, otherwise recalculate
+    # Using stored hash is more reliable and efficient
+    if previous_hash is None:
+        previous_hash = compute_hash(previous_content)
+
     if content_hash == previous_hash:
         return {
             "changed": False,

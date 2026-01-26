@@ -40,9 +40,10 @@ def run(dry_run=False):
         # Get previous snapshot
         snapshot = get_page_snapshot(page_id)
         previous_content = snapshot["current_content"] if snapshot else None
+        previous_hash = snapshot["current_hash"] if snapshot else None
 
-        # Check for changes
-        result = check_page(page, previous_content)
+        # Check for changes (pass both content and hash for reliable comparison)
+        result = check_page(page, previous_content, previous_hash)
 
         if result.get("error"):
             print(f"  ERROR: {result['error']}")
