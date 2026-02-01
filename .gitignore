@@ -20,3 +20,6 @@ Thumbs.db
 
 # Project specific
 # Note: snapshots.json is tracked (stores page history)
+
+# Claude Code local settings
+.claude/*.local.json

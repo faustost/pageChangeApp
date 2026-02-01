@@ -45,6 +45,11 @@ def run(dry_run=False):
         # Check for changes (pass both content and hash for reliable comparison)
         result = check_page(page, previous_content, previous_hash)
 
+        # Debug: Log hash comparison details
+        print(f"  Previous hash: {previous_hash}")
+        print(f"  Current hash:  {result.get('hash')}")
+        print(f"  Changed flag:  {result.get('changed')}")
+
         if result.get("error"):
             print(f"  ERROR: {result['error']}")
             failed_pages.append(page_name)

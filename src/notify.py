@@ -15,22 +15,45 @@ def truncate_diff(diff, max_length=2000):
     return diff[:max_length] + "\n\n... (truncated)"
 
 
+def truncate_message(message, max_length=MAX_MESSAGE_LENGTH):
+    """Truncate message if too long."""
+    if len(message) <= max_length:
+        return message
+    return message[:max_length] + "\n\n\\.\\.\\. \\(message truncated\\)"
+
+
+def escape_markdown(text):
+    """Escape special Markdown characters for Telegram."""
+    if not text:
+        return text
+    # Characters that need escaping in Telegram Markdown
+    special_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
+    for char in special_chars:
+        text = text.replace(char, f'\\{char}')
+    return text
+
+
 def format_telegram_message(page_name, page_url, diff, first_run=False):
     """Format a nice Telegram message."""
+    # Escape page name for Markdown, but keep URL as-is (will be escaped separately)
+    safe_name = escape_markdown(page_name)
+
     if first_run:
         return (
             f"*New page added to monitor*\n\n"
-            f"*{page_name}*\n"
+            f"*{safe_name}*\n"
             f"{page_url}\n\n"
-            f"First snapshot saved. Will notify on changes."
+            f"First snapshot saved\\. Will notify on changes\\."
         )
 
     truncated_diff = truncate_diff(diff)
+    # Don't escape diff content inside code block, but escape backticks
+    safe_diff = truncated_diff.replace('`', "'") if truncated_diff else ""
     return (
-        f"*Page changed!*\n\n"
-        f"*{page_name}*\n"
+        f"*Page changed\\!*\n\n"
+        f"*{safe_name}*\n"
         f"{page_url}\n\n"
-        f"```\n{truncated_diff}\n```"
+        f"```\n{safe_diff}\n```"
     )
 
 
@@ -45,14 +68,13 @@ def send_telegram(message, silent=False):
         return False
 
     # Truncate if needed
-    if len(message) > MAX_MESSAGE_LENGTH:
-        message = message[:MAX_MESSAGE_LENGTH] + "\n\n... (message truncated)"
+    message = truncate_message(message)
 
     url = TELEGRAM_API.format(token=token)
     payload = {
         "chat_id": chat_id,
         "text": message,
-        "parse_mode": "Markdown",
+        "parse_mode": "MarkdownV2",
         "disable_web_page_preview": True,
         "disable_notification": silent,
     }
@@ -75,11 +97,12 @@ def notify_change(page_name, page_url, diff, first_run=False):
 
 def format_failure_message(failed_pages):
     """Formats a message for page check failures."""
-    page_list = "\n - ".join(failed_pages)
+    safe_pages = [escape_markdown(p) for p in failed_pages]
+    page_list = "\n \\- ".join(safe_pages)
     return (
         f"⚠️ *Falha no Monitoramento*\n\n"
-        f"Não foi possível verificar as seguintes {len(failed_pages)} página(s):\n\n"
-        f" - {page_list}"
+        f"Não foi possível verificar as seguintes {len(failed_pages)} página\\(s\\):\n\n"
+        f" \\- {page_list}"
     )
 
 
@@ -99,7 +122,7 @@ def notify_no_changes():
     """Envia uma notificação quando nenhuma alteração é encontrada."""
     message = (
         f"✅ *Monitoramento Concluído*\n\n"
-        f"Todas as páginas foram verificadas e nenhuma nova alteração foi encontrada."
+        f"Todas as páginas foram verificadas e nenhuma nova alteração foi encontrada\\."
     )
     # Silent notification for no changes
     return send_telegram(message, silent=True)
