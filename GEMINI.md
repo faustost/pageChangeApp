@@ -28,6 +28,12 @@ The application is composed of several modules:
 *   `src/monitor.py`: Contains the core logic for fetching a web page, extracting its text content, and computing a diff against the last known version.
 *   `src/storage.py`: Manages the reading and writing of the `data/snapshots.json` file.
 *   `src/notify.py`: Responsible for formatting and sending notifications to Telegram.
+*   `tests/`: Contains the unit tests for the application.
+    *   `conftest.py`: Test fixtures and setup.
+    *   `test_monitor.py`: Tests for the core monitoring logic.
+    *   `test_storage.py`: Tests for the storage layer.
+    *   `test_notify.py`: Tests for the notification system.
+    *   `test_config.py`: Tests for configuration loading.
 *   `.github/workflows/monitor.yml`: A GitHub Actions workflow that automates the execution of the monitor on an hourly schedule and commits the results.
 
 ## Building and Running
@@ -36,6 +42,7 @@ The application is composed of several modules:
 
 *   Python 3
 *   A Telegram Bot Token and Chat ID.
+*   `pytest` (for running tests)
 
 ### Installation
 
@@ -68,6 +75,15 @@ pip install -r requirements.txt
     ```bash
     python main.py --dry-run
     ```
+
+### Running Tests
+
+To run the automated tests, install `pytest` and execute:
+
+```bash
+pip install pytest pytest-mock
+python -m pytest tests
+```
 
 ### Running with GitHub Actions
 

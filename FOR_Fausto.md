@@ -131,6 +131,38 @@ Sends Telegram messages. Simple in theory, surprisingly tricky in practice (more
 
 ---
 
+## The Safety Net: Automated Tests
+
+"It works on my machine" is the famous last words of software engineering. To sleep better at night, we added a suite of automated tests.
+
+Think of tests as a simulation. Before we let the robot guard the real house, we put it in a simulator and throw problems at it:
+- "What if the internet is down?"
+- "What if the website sends garbage data?"
+- "What if the config file is missing?"
+
+We use **pytest** to run these simulations.
+
+### The Test Suite (`tests/`)
+
+*   **`test_monitor.py`**: We mock (fake) the internet. We tell the monitor "Hey, pretend `requests.get` returned this HTML," and verify it extracts the right text. We also simulate network failures to ensure the retry logic kicks in.
+*   **`test_storage.py`**: We test the memory. We save some fake data, load it back, and ensure it's identical. We also check if the history trimming works (so `snapshots.json` doesn't grow infinitely).
+*   **`test_notify.py`**: We verify that messages are formatted correctly (escaping those pesky Markdown characters) and that we don't crash if the Telegram API is down.
+
+### How to Run the Simulator (The Easy Way)
+
+We know that setting up Python environments on Windows can be... adventurous. So, I built a shortcut.
+
+Open your terminal in the project folder and run:
+**`./run_tests.bat`**
+
+This script does the heavy lifting: checks for Python, installs the tools, and runs the simulation.
+- **Green dots?** The robot is healthy!
+- **Red text?** The robot found a bug. Good robot.
+
+(For the command-line pros: `python -m pytest tests` works too).
+
+---
+
 ## The GitHub Actions Magic
 
 Here's something beautiful: **your code runs for free, forever, without you touching it**.

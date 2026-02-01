@@ -75,6 +75,18 @@ python main.py --dry-run
 TELEGRAM_BOT_TOKEN=xxx TELEGRAM_CHAT_ID=xxx python main.py
 ```
 
+### Running Tests
+
+To run the automated test suite:
+
+```bash
+# Install test dependencies
+pip install pytest pytest-mock
+
+# Run tests
+python -m pytest tests
+```
+
 ## Project Structure
 
 ```
